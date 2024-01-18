@@ -11,7 +11,8 @@ export async function main(userId) {
   const res = await client.query(`SELECT $1::text as message`, [`Hello world!`])
   console.log(res.rows[0].message)
   const userInfo = await client.query(
-    `SELECT garmin_username, garmin_password from users where id = $1`,
+    `SELECT garmin_username,
+    garmin_password from users where id = $1`,
     [userId]
   )
   const garminInfo = userInfo.rows[0]
