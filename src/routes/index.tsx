@@ -1,8 +1,11 @@
 import { useLocation } from "react-router-dom"
 import { useElectricData } from "electric-query"
 import { Flex, Heading, Text, Box, Em, Strong } from "@radix-ui/themes"
+import { useLiveQuery } from "electric-sql/react"
 import { Electric } from "../generated/client"
 import { Line } from "@ant-design/charts"
+import { useElectric } from "../context"
+import { useUser } from "@clerk/clerk-react"
 
 function calculateTimeProgress() {
   const now = new Date()
@@ -69,7 +72,6 @@ function Chart({ data, seriesField }) {
 
 const queries = ({ db }: { db: Electric[`db`] }) => {
   return {
-    activities: db.garmin_data.liveMany(),
     dailyMinAccmumulation: db.raw({
       sql: `WITH RECURSIVE DateSeries (date) AS (
     SELECT date('now', '-${monthsVal} months') AS date
@@ -109,11 +111,23 @@ ORDER BY
 Index.queries = queries
 
 export default function Index() {
+  const { db } = useElectric()!
+  const {
+    user: { id },
+  } = useUser()
   const location = useLocation()
-  const { activities, dailyMinAccmumulation } = useElectricData(
+  const { dailyMinAccmumulation } = useElectricData(
     location.pathname + location.search
   )
-  console.log({ activities })
+
+  const { results: user } = useLiveQuery(
+    db.users.liveUnique({
+      where: {
+        id,
+      },
+    })
+  )
+  console.log({ user })
   const weeklyAccumulation = dailyMinAccmumulation.map((i) => {
     return {
       day: i.day,
@@ -160,6 +174,38 @@ export default function Index() {
           data={[...weeklyAccumulation, ...monthlyAccumulation]}
           seriesField={`category`}
         />
+        <Heading>Garmin Credentials</Heading>
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault()
+            const formData = Object.fromEntries(new FormData(e.target))
+            console.log({ formData })
+            await db.users.update({
+              data: {
+                ...formData,
+              },
+              where: {
+                id,
+              },
+            })
+          }}
+        >
+          <Flex direction="column" width="max-content" gap="1">
+            <Text>email</Text>
+            <input
+              type="text"
+              name="garmin_username"
+              defaultValue={user?.garmin_username}
+            />
+            <Text trim="normal">password</Text>
+            <input
+              type="password"
+              name="garmin_password"
+              defaultValue={user?.garmin_password}
+            />
+            <button type="submit">save</button>
+          </Flex>
+        </form>
       </Flex>
     </>
   )
