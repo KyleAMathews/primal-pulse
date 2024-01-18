@@ -42,7 +42,6 @@ export async function main(userId) {
 
         if (checkResult.rows.length > 0) {
           console.log(`updating record`)
-
           // Record exists, so prepare an update query
           query = `
       UPDATE garmin_data
