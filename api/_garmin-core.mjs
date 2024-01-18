@@ -27,7 +27,7 @@ export async function main(userId) {
   await GCClient.login()
   //const userProfile = await GCClient.getUserProfile();
   //console.log(userProfile)
-  const activities = await GCClient.getActivities(0, 200)
+  const activities = await GCClient.getActivities(0, 2)
   try {
     await Promise.all(
       activities.map(async (activity) => {
