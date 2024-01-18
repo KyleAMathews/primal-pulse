@@ -9,7 +9,7 @@ export async function main(userId) {
   const client = new Client({ connectionString: process.env.CONNECTION_STRING })
   await client.connect()
   const res = await client.query(`SELECT $1::text as message`, [`Hello world!`])
-  console.log(res.rows[0].message) // Hello world!
+  console.log(res.rows[0].message)
   const userInfo = await client.query(
     `SELECT garmin_username, garmin_password from users where id = $1`,
     [userId]
