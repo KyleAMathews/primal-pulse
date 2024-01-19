@@ -30,7 +30,7 @@ export default function Root() {
         <header>
           <Flex align="center" gap="3">
             <ConnectivityIcon connected={connectivityState === `connected`} />
-            <Heading size="2" weight="bold" size="4" trim="normal">
+            <Heading size="2" weight="bold" trim="normal">
               <NavLink to="/" style={{ textDecoration: `none` }}>
                 Primal Pulse
               </NavLink>
