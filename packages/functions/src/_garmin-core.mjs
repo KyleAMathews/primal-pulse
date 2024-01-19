@@ -54,7 +54,7 @@ export async function main({ userId, numActivities, connectionString }) {
     `
         values = [
           new Date(activity.startTimeGMT + ` GMT`),
-          `user_2ZrWJQijcAkujdv4nQMOYaE1Obi`,
+          userId,
           JSON.stringify(activity),
           activity.activityId,
         ]
@@ -68,7 +68,7 @@ export async function main({ userId, numActivities, connectionString }) {
         values = [
           uuidv4(),
           new Date(activity.startTimeGMT + ` GMT`),
-          `user_2ZrWJQijcAkujdv4nQMOYaE1Obi`,
+          userId,
           `activity`,
           JSON.stringify(activity),
         ]
