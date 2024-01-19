@@ -9,10 +9,10 @@ import { useElectric } from "../context"
 import { useUser } from "@clerk/clerk-react"
 
 // Prod
-//const lambdaFunction = `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
+const lambdaFunction = `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
 
 // dev
-const lambdaFunction = `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
+// const lambdaFunction = `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
 
 function BusyButton({ setRandom }) {
   const [busy, setBusy] = useState(false)
