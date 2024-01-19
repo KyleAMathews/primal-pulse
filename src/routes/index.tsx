@@ -1,11 +1,38 @@
+import { useState } from "react"
 import { useLocation } from "react-router-dom"
 import { useElectricData } from "electric-query"
-import { Flex, Heading, Text, Box, Em, Strong } from "@radix-ui/themes"
+import { Flex, Button, Heading, Text, Box, Em, Strong } from "@radix-ui/themes"
 import { useLiveQuery } from "electric-sql/react"
 import { Electric } from "../generated/client"
 import { Line } from "@ant-design/charts"
 import { useElectric } from "../context"
 import { useUser } from "@clerk/clerk-react"
+
+// Prod
+//const lambdaFunction = `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
+
+// dev
+const lambdaFunction = `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
+
+function BusyButton() {
+  const [busy, setBusy] = useState(false)
+  const {
+    user: { id },
+  } = useUser()
+
+  return (
+    <Button
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true)
+        await fetch(lambdaFunction + `?userId=${id}`)
+        setBusy(false)
+      }}
+    >
+      Fetch Latest Garmin Activities
+    </Button>
+  )
+}
 
 function calculateTimeProgress() {
   const now = new Date()
@@ -204,6 +231,9 @@ export default function Index() {
               defaultValue={user?.garmin_password}
             />
             <button type="submit">save</button>
+          </Flex>
+          <Flex mt="3">
+            <BusyButton />
           </Flex>
         </form>
       </Flex>

@@ -42,7 +42,6 @@
     "react-router-dom": "^6.21.2",
     "shelljs": "^0.8.5",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3",
     "uuid": "^9.0.1",
     "vite": "^5.0.11",
     "vite-plugin-top-level-await": "^1.4.1",
@@ -64,6 +63,9 @@
     "type": "git",
     "url": "git+https://github.com/KyleAMathews/vite-react-router-electric-sql-starter.git"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "backend:start": "docker compose --env-file src/backend/compose/.envrc -f src/backend/compose/docker-compose.yaml up",
     "backend:down": "docker compose  --env-file src/backend/compose/.envrc -f src/backend/compose/docker-compose.yaml down --volumes",
@@ -74,5 +76,12 @@
     "db:psql": "node ./db/connect.cjs",
     "cleanup-example-code": "node scripts/cleanup-example-code.js",
     "dev": "cross-env NODE_ENV=development concurrently \"npx tsx watch src/backend/index.ts\" \"vite\""
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.2",
+    "aws-cdk-lib": "^2.122.0",
+    "constructs": "^10.3.0",
+    "sst": "2.39.5",
+    "typescript": "^5.3.3"
   }
 }

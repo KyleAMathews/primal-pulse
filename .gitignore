@@ -134,3 +134,4 @@ local-data.db-wal
 src/generated/client/index.ts
 .electric_migrations_tmp_*
 .vercel
+.sst
