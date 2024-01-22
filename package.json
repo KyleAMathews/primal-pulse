@@ -71,7 +71,7 @@
     "backend:down": "docker compose  --env-file src/backend/compose/.envrc -f src/backend/compose/docker-compose.yaml down --volumes",
     "build": "cross-env-shell ELECTRIC_URL=$ELECTRIC_URL ELECTRIC_PROXY=$ELECTRIC_PROXY VITE_ELECTRIC_URL=$ELECTRIC_URL \"npm run client:generate:prod && vite build\"",
     "client:generate": "npx electric-sql@latest generate --service http://localhost:5133",
-    "client:generate:prod": "npx electric-sql@latest generate --service $ELECTRIC_URL --proxy $ELECTRIC_PROXY",
+    "client:generate:prod": "npx electric-sql@latest generate --service $ELECTRIC_URL",
     "db:migrate": "node ./db/migrate.cjs",
     "db:psql": "node ./db/connect.cjs",
     "cleanup-example-code": "node scripts/cleanup-example-code.js",
