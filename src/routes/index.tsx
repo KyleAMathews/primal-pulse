@@ -271,13 +271,13 @@ ORDER BY
             <input
               type="text"
               name="garmin_username"
-              defaultValue={user?.garmin_username}
+              defaultValue={user?.garmin_username || ``}
             />
             <Text trim="normal">password</Text>
             <input
               type="password"
               name="garmin_password"
-              defaultValue={user?.garmin_password}
+              defaultValue={user?.garmin_password || ``}
             />
             <button type="submit">save</button>
           </Flex>
