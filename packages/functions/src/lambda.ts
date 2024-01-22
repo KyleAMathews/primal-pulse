@@ -12,14 +12,14 @@ export const handler = ApiHandler(async (_evt) => {
     for (const { id } of users) {
       await main({
         userId: id,
-        numActivities: 5,
+        numActivities: 50,
         connectionString: Config.CONNECTION_STRING,
       })
     }
   } else {
     await main({
       userId: _evt.queryStringParameters.userId,
-      numActivities: _evt.queryStringParameters.numActivities || 5,
+      numActivities: _evt.queryStringParameters.numActivities || 50,
       connectionString: Config.CONNECTION_STRING,
     })
   }

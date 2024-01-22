@@ -23,49 +23,47 @@ export function ElectricalProvider({ children }) {
     const setupElectric = async () => {
       const token = await getToken()
       if (token) {
-        setTimeout(async () => {
-          const config = {
-            appName: `garmin`,
-            schema,
-            sqliteWasmPath: sqliteWasm,
-            config: {
-              auth: {
-                token,
-              },
-              debug: false, //DEBUG_MODE,
-              url: electricUrl,
+        const config = {
+          appName: `garmin`,
+          schema,
+          sqliteWasmPath: sqliteWasm,
+          config: {
+            auth: {
+              token,
             },
-          }
-          console.log({ config })
-          const electric = await initElectric(config)
-          setDb(electric)
+            debug: false, //DEBUG_MODE,
+            url: electricUrl,
+          },
+        }
+        console.log({ config })
+        const electric = await initElectric(config)
+        setDb(electric)
 
-          // Sync user data in if it's changed.
-          const { db } = electric
-          const syncPromise = await db.users.sync()
-          await syncPromise.synced
-          const { fullName, imageUrl, id } = user
-          const clerkUser = { name: fullName, id, avatar_url: imageUrl }
-          const dbUser =
-            (await db.users.findUnique({
-              where: {
-                id,
-              },
-            })) || {}
-          if (!isEqual(dbUser, clerkUser)) {
-            db.users.upsert({
-              create: {
-                ...clerkUser,
-              },
-              update: {
-                ...clerkUser,
-              },
-              where: {
-                id,
-              },
-            })
-          }
-        }, 1000)
+        // Sync user data in if it's changed.
+        const { db } = electric
+        const syncPromise = await db.users.sync()
+        await syncPromise.synced
+        const { fullName, imageUrl, id } = user
+        const clerkUser = { name: fullName, id, avatar_url: imageUrl }
+        const dbUser =
+          (await db.users.findUnique({
+            where: {
+              id,
+            },
+          })) || {}
+        if (!isEqual(dbUser, clerkUser)) {
+          db.users.upsert({
+            create: {
+              ...clerkUser,
+            },
+            update: {
+              ...clerkUser,
+            },
+            where: {
+              id,
+            },
+          })
+        }
       }
     }
 
