@@ -72,7 +72,6 @@
     "build": "cross-env-shell ELECTRIC_URL=$ELECTRIC_URL ELECTRIC_PROXY=$ELECTRIC_PROXY VITE_ELECTRIC_URL=$ELECTRIC_URL \"npm run client:generate:prod && vite build\"",
     "client:generate": "electric-sql generate --service http://localhost:5133",
     "client:generate:prod": "electric-sql generate --service https://$ELECTRIC_URL --proxy $ELECTRIC_PROXY",
-    "postinstall": "patch-package",
     "db:migrate": "node ./db/migrate.cjs",
     "db:psql": "node ./db/connect.cjs",
     "cleanup-example-code": "node scripts/cleanup-example-code.js",
