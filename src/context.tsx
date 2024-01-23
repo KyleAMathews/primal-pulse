@@ -33,7 +33,7 @@ export function ElectricalProvider({ children }) {
               token,
               clientId: user.id,
             },
-            debug: false, //DEBUG_MODE,
+            debug: true, //DEBUG_MODE,
             url: electricUrl,
           },
         }
