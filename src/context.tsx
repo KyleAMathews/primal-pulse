@@ -23,7 +23,7 @@ export function ElectricalProvider({ children }) {
     const setupElectric = async () => {
       const token = await getToken()
       console.log({ token, user })
-      if (token) {
+      if (token && user) {
         const config = {
           appName: `garmin`,
           schema,
@@ -31,6 +31,7 @@ export function ElectricalProvider({ children }) {
           config: {
             auth: {
               token,
+              clientId: user.id,
             },
             debug: false, //DEBUG_MODE,
             url: electricUrl,
@@ -42,6 +43,7 @@ export function ElectricalProvider({ children }) {
 
         // Sync user data in if it's changed.
         const { db } = electric
+        console.log(db)
         const syncPromise = await db.users.sync()
         await syncPromise.synced
         const { fullName, imageUrl, id } = user
@@ -77,7 +79,7 @@ export function ElectricalProvider({ children }) {
         // make sure to catch any error
         .catch(console.error)
     }
-  }, [getToken, isSignedIn])
+  }, [getToken, isSignedIn, user])
 
   return <ElectricProvider db={db}>{children}</ElectricProvider>
 }
