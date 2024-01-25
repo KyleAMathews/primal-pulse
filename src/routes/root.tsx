@@ -4,7 +4,6 @@ import { Flex, Box, Text, Heading } from "@radix-ui/themes"
 import { ConnectivityIcon } from "../components/connectivity-icon"
 
 export default function Root() {
-  console.log({ connectivityState })
   return (
     <Flex direction="column" style={{ margin: `0 auto`, minHeight: `100%` }}>
       <Flex asChild align="center" p="3" justify="between">
