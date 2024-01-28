@@ -241,7 +241,7 @@ ORDER BY
           </Text>
         </Box>
         <Heading size="4">
-          Acumulated hours of weekly and monthly movement over the past{` `}
+          Accumulated hours of weekly and monthly movement over the past{` `}
           {monthsVal}
           {` `}
           months
