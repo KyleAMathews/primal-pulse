@@ -68,6 +68,18 @@ const isMobile =
   )
 const monthsVal = isMobile ? `3` : `12`
 
+function ctl(dailyTraining) {
+  const ctlArray = [0]
+  for (let i = 1; i < dailyTraining.length; i++) {
+    const decayFactor = 1 - Math.exp(-1 / 42)
+    ctlArray.push(
+      (dailyTraining[i].daily_total_duration / 60 / 60) * decayFactor +
+        ctlArray[i - 1] * Math.exp(-1 / 42)
+    )
+  }
+  return ctlArray
+}
+
 function Chart({ dailyMinAccmumulation, seriesField, title }) {
   if (dailyMinAccmumulation.length === 0) {
     return
@@ -86,11 +98,21 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
       count: Math.round((i.monthly_accumulated_duration / 60 / 60) * 10) / 10,
     }
   })
+  const chronicDailyLoad = ctl(dailyMinAccmumulation.slice(-42))
+  const acuteDailyLoad =
+    Math.round(
+      (dailyMinAccmumulation
+        .slice(-7)
+        .map((i) => i.daily_total_duration / 60 / 60)
+        .reduce((acc, currentValue) => acc + currentValue, 0) /
+        7) *
+        100
+    ) / 100
+  console.log(title, { chronicDailyLoad })
   const props = {
     data: [...weeklyAccumulation, ...monthlyAccumulation],
     xField: (d) => new Date(d.day),
     yField: `count`,
-    title,
     axis: {
       y: {
         title: `Hours of movement`,
@@ -102,15 +124,25 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
   }
 
   return (
-    <div
-      style={{
-        height: isMobile ? 300 : 600,
-        marginLeft: -12,
-        marginRight: -12,
-      }}
-    >
-      {` `}
-      <Line {...props} />
+    <div>
+      <div>
+        <h3>{title}</h3>
+        <div>Chronic load: {chronicDailyLoad.slice(-1)[0].toPrecision(2)}</div>
+        <div>Acute load: {acuteDailyLoad}</div>
+        <div>
+          Ratio:{` `}
+          {(acuteDailyLoad / chronicDailyLoad.slice(-1)[0]).toPrecision(3)}
+        </div>
+      </div>
+      <div
+        style={{
+          height: isMobile ? 300 : 600,
+          marginLeft: -12,
+          marginRight: -12,
+        }}
+      >
+        <Line {...props} />
+      </div>
     </div>
   )
 }
@@ -162,6 +194,7 @@ SELECT
     ds.date AS day,
     strftime('%Y-%m', ds.date) AS month,
     strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(w.daily_duration, 0) AS daily_total_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
 FROM 
@@ -200,6 +233,7 @@ SELECT
     ds.date AS day,
     strftime('%Y-%m', ds.date) AS month,
     strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(w.daily_duration, 0) AS daily_total_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
 FROM 
@@ -238,6 +272,7 @@ SELECT
     ds.date AS day,
     strftime('%Y-%m', ds.date) AS month,
     strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(w.daily_duration, 0) AS daily_total_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
 FROM 
@@ -275,6 +310,7 @@ SELECT
     ds.date AS day,
     strftime('%Y-%m', ds.date) AS month,
     strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(w.daily_duration, 0) AS daily_total_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
 FROM 
@@ -313,6 +349,7 @@ SELECT
     ds.date AS day,
     strftime('%Y-%m', ds.date) AS month,
     strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(w.daily_duration, 0) AS daily_total_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
     COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
 FROM 
@@ -374,6 +411,10 @@ ORDER BY
             {` `}
             <Strong>{monthlyAccumulation.slice(-1)[0].count} hours</Strong>
           </Text>
+          <br />
+          <Text as="p">Maintenance dose === 1x * Chronic Load</Text>
+          <Text as="p">Loading dose === 1.5x * Chronic Load</Text>
+          <Text as="p">"Big" dose === 2.5x * Chronic Load</Text>
         </Box>
         <Heading size="4">
           Accumulated hours of weekly and monthly movement over the past{` `}
