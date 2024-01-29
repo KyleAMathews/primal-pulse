@@ -76,7 +76,7 @@
     "db:migrate": "node ./db/migrate.cjs",
     "db:psql": "node ./db/connect.cjs",
     "cleanup-example-code": "node scripts/cleanup-example-code.js",
-    "dev": "cross-env NODE_ENV=development concurrently \"npx tsx watch src/backend/index.ts\" \"vite\""
+    "dev": "cross-env NODE_ENV=development concurrently \"npx sst dev\" \"vite\""
   },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
