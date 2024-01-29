@@ -412,9 +412,10 @@ ORDER BY
             <Strong>{monthlyAccumulation.slice(-1)[0].count} hours</Strong>
           </Text>
           <br />
-          <Text as="p">Maintenance dose === 1x * Chronic Load</Text>
-          <Text as="p">Loading dose === 1.5x * Chronic Load</Text>
-          <Text as="p">"Big" dose === 2.5x * Chronic Load</Text>
+          <Text as="p">Recovery day === 0-0.5x * Chronic Load</Text>
+          <Text as="p">Maintenance day === 0.5-1x * Chronic Load</Text>
+          <Text as="p">Loading day === 1-1.5x * Chronic Load</Text>
+          <Text as="p">"Big" day === 1.5-2.5x * Chronic Load</Text>
         </Box>
         <Heading size="4">
           Accumulated hours of weekly and monthly movement over the past{` `}
