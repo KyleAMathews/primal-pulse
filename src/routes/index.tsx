@@ -108,6 +108,17 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
         7) *
         100
     ) / 100
+  const chronicMins = chronicDailyLoad.slice(-1)[0] * 60
+  const recoveryMins = chronicMins * 0.5
+  const maintenanceMins = chronicMins * 1
+  const loadingMins = chronicMins * 1.5
+  const capMins = chronicMins * 2.5
+  const ratio = acuteDailyLoad / chronicDailyLoad.slice(-1)[0]
+  const minsAtTopRatio = 1.5 * chronicMins * 7
+  const currentMinutes = ratio * chronicMins * 7
+
+  console.log({ minsAtTopRatio, currentMinutes })
+
   console.log(title, { chronicDailyLoad })
   const props = {
     data: [...weeklyAccumulation, ...monthlyAccumulation],
@@ -127,11 +138,31 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
     <div>
       <div>
         <h3>{title}</h3>
-        <div>Chronic load: {chronicDailyLoad.slice(-1)[0].toPrecision(2)}</div>
-        <div>Acute load: {acuteDailyLoad}</div>
+        <div>
+          6-week load: {chronicMins.toPrecision(3)}
+          {` `}
+          mins
+        </div>
+        <div>1-week load: {(acuteDailyLoad * 60).toPrecision(3)} mins</div>
         <div>
           Ratio:{` `}
-          {(acuteDailyLoad / chronicDailyLoad.slice(-1)[0]).toPrecision(3)}
+          {ratio.toPrecision(3)}
+        </div>
+        <div>
+          Recovery:{` `}
+          less than {recoveryMins.toPrecision(3)} mins
+        </div>
+        <div>
+          Loading:{` `}
+          {loadingMins.toPrecision(3)} mins or more
+        </div>
+        <div>
+          Daily Cap:{` `}
+          Stay less than {capMins.toPrecision(3)} mins
+        </div>
+        <div>
+          Minutes to 1.5 ratio:{` `}
+          {(minsAtTopRatio - currentMinutes).toPrecision(2)} mins
         </div>
       </div>
       <div
@@ -412,10 +443,10 @@ ORDER BY
             <Strong>{monthlyAccumulation.slice(-1)[0].count} hours</Strong>
           </Text>
           <br />
-          <Text as="p">Recovery day === 0-0.5x * Chronic Load</Text>
-          <Text as="p">Maintenance day === 0.5-1x * Chronic Load</Text>
-          <Text as="p">Loading day === 1-1.5x * Chronic Load</Text>
-          <Text as="p">"Big" day === 1.5-2.5x * Chronic Load</Text>
+          <Text as="p">Recovery day === 0-0.5x * 6-week Load</Text>
+          <Text as="p">Maintenance day === 0.5-1x * 6-week Load</Text>
+          <Text as="p">Loading day === 1.5x * 6-week Load</Text>
+          <Text as="p">"Big" day === 1.5-2.5x * 6-week Load</Text>
         </Box>
         <Heading size="4">
           Accumulated hours of weekly and monthly movement over the past{` `}
