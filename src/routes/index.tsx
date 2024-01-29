@@ -8,11 +8,9 @@ import { Line } from "@ant-design/charts"
 import { useElectric } from "../context"
 import { useUser } from "@clerk/clerk-react"
 
-// Prod
-const lambdaFunction = `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
-
-// dev
-// const lambdaFunction = `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
+const lambdaFunction = import.meta.env.PROD
+  ? `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
+  : `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
 
 function BusyButton({ setRandom }) {
   const [busy, setBusy] = useState(false)
@@ -70,13 +68,29 @@ const isMobile =
   )
 const monthsVal = isMobile ? `3` : `12`
 
-console.log({ isMobile })
-
-function Chart({ data, seriesField }) {
+function Chart({ dailyMinAccmumulation, seriesField, title }) {
+  if (dailyMinAccmumulation.length === 0) {
+    return
+  }
+  const weeklyAccumulation = dailyMinAccmumulation.map((i) => {
+    return {
+      day: i.day,
+      category: `weekly`,
+      count: Math.round((i.weekly_accumulated_duration / 60 / 60) * 10) / 10,
+    }
+  })
+  const monthlyAccumulation = dailyMinAccmumulation.map((i) => {
+    return {
+      day: i.day,
+      category: `monthly`,
+      count: Math.round((i.monthly_accumulated_duration / 60 / 60) * 10) / 10,
+    }
+  })
   const props = {
-    data,
+    data: [...weeklyAccumulation, ...monthlyAccumulation],
     xField: (d) => new Date(d.day),
     yField: `count`,
+    title,
     axis: {
       y: {
         title: `Hours of movement`,
@@ -103,41 +117,6 @@ function Chart({ data, seriesField }) {
 
 const queries = ({ db }: { db: Electric[`db`] }) => {
   return {}
-  // return {
-  // dailyMinAccmumulation: db.raw({
-  // sql: `WITH RECURSIVE DateSeries (date) AS (
-  // SELECT date('now', '-${monthsVal} months') AS date
-  // UNION ALL
-  // SELECT date(date, '+1 day') FROM DateSeries
-  // WHERE date < date('now')
-  // ),
-  // Workouts AS (
-  // SELECT
-  // date(e.date) AS workout_date,
-  // COALESCE(SUM(json_extract(e.attributes, '$.elapsedDuration')), 0) AS daily_duration
-  // FROM
-  // garmin_data e
-  // WHERE
-  // e.type = 'activity' AND
-  // e.date >= date('now', '-${monthsVal} months')
-  // GROUP BY
-  // workout_date
-  // )
-  // SELECT
-  // ds.date AS day,
-  // strftime('%Y-%m', ds.date) AS month,
-  // strftime('%Y-W%W', ds.date) AS week,
-  // COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
-  // COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
-  // FROM
-  // DateSeries ds
-  // LEFT JOIN
-  // Workouts w ON ds.date = w.workout_date
-  // ORDER BY
-  // ds.date;
-  // `,
-  // }),
-  // }
 }
 
 Index.queries = queries
@@ -148,10 +127,130 @@ export default function Index() {
     user: { id },
   } = useUser()
   const [dailyMinAccmumulation, setDailyMinAccumulation] = useState()
+  const [dailyWalkingMinAccmumulation, setWalkingDailyMinAccumulation] =
+    useState([])
+  const [dailyRunningMinAccmumulation, setRunningDailyMinAccumulation] =
+    useState([])
+  const [dailyCyclingMinAccmumulation, setCyclingDailyMinAccumulation] =
+    useState([])
+  const [dailyGymMinAccmumulation, setGymDailyMinAccumulation] = useState([])
   const [random, setRandom] = useState(Math.random())
 
   useEffect(() => {
-    console.time(`query`)
+    db.raw({
+      sql: `WITH RECURSIVE DateSeries (date) AS (
+    SELECT date('now', '-${monthsVal} months') AS date
+    UNION ALL
+    SELECT date(date, '+1 day') FROM DateSeries
+    WHERE date < date('now')
+),
+Workouts AS (
+    SELECT 
+        date(e.date) AS workout_date, 
+        COALESCE(SUM(json_extract(e.attributes, '$.elapsedDuration')), 0) AS daily_duration
+    FROM 
+        garmin_data e
+    WHERE 
+        e.type = 'activity' AND
+        e.user_id = '${id}' AND
+        e.date >= date('now', '-${monthsVal} months') AND
+        (e.attributes->'activityType'->>'typeKey' = 'hiking' OR e.attributes->'activityType'->>'typeKey' = 'walking')
+    GROUP BY 
+        workout_date
+)
+SELECT 
+    ds.date AS day,
+    strftime('%Y-%m', ds.date) AS month,
+    strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
+FROM 
+    DateSeries ds
+LEFT JOIN 
+    Workouts w ON ds.date = w.workout_date
+ORDER BY 
+    ds.date;
+`,
+    }).then((results) => {
+      console.log({ results })
+      setWalkingDailyMinAccumulation(results)
+    })
+    db.raw({
+      sql: `WITH RECURSIVE DateSeries (date) AS (
+    SELECT date('now', '-${monthsVal} months') AS date
+    UNION ALL
+    SELECT date(date, '+1 day') FROM DateSeries
+    WHERE date < date('now')
+),
+Workouts AS (
+    SELECT 
+        date(e.date) AS workout_date, 
+        COALESCE(SUM(json_extract(e.attributes, '$.elapsedDuration')), 0) AS daily_duration
+    FROM 
+        garmin_data e
+    WHERE 
+        e.type = 'activity' AND
+        e.user_id = '${id}' AND
+        e.date >= date('now', '-${monthsVal} months') AND
+        (e.attributes->'activityType'->>'typeKey' = 'indoor_cardio')
+    GROUP BY 
+        workout_date
+)
+SELECT 
+    ds.date AS day,
+    strftime('%Y-%m', ds.date) AS month,
+    strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
+FROM 
+    DateSeries ds
+LEFT JOIN 
+    Workouts w ON ds.date = w.workout_date
+ORDER BY 
+    ds.date;
+`,
+    }).then((results) => {
+      console.log({ results })
+      setGymDailyMinAccumulation(results)
+    })
+    db.raw({
+      sql: `WITH RECURSIVE DateSeries (date) AS (
+    SELECT date('now', '-${monthsVal} months') AS date
+    UNION ALL
+    SELECT date(date, '+1 day') FROM DateSeries
+    WHERE date < date('now')
+),
+Workouts AS (
+    SELECT 
+        date(e.date) AS workout_date, 
+        COALESCE(SUM(json_extract(e.attributes, '$.elapsedDuration')), 0) AS daily_duration
+    FROM 
+        garmin_data e
+    WHERE 
+        e.type = 'activity' AND
+        e.user_id = '${id}' AND
+        e.date >= date('now', '-${monthsVal} months') AND
+        (e.attributes->'activityType'->>'typeKey' = 'running')
+    GROUP BY 
+        workout_date
+)
+SELECT 
+    ds.date AS day,
+    strftime('%Y-%m', ds.date) AS month,
+    strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
+FROM 
+    DateSeries ds
+LEFT JOIN 
+    Workouts w ON ds.date = w.workout_date
+ORDER BY 
+    ds.date;
+`,
+    }).then((results) => {
+      console.log({ results })
+      setRunningDailyMinAccumulation(results)
+    })
     db.raw({
       sql: `WITH RECURSIVE DateSeries (date) AS (
     SELECT date('now', '-${monthsVal} months') AS date
@@ -188,7 +287,44 @@ ORDER BY
     }).then((results) => {
       console.log({ results })
       setDailyMinAccumulation(results)
-      console.timeEnd(`query`)
+    })
+    db.raw({
+      sql: `WITH RECURSIVE DateSeries (date) AS (
+    SELECT date('now', '-${monthsVal} months') AS date
+    UNION ALL
+    SELECT date(date, '+1 day') FROM DateSeries
+    WHERE date < date('now')
+),
+Workouts AS (
+    SELECT 
+        date(e.date) AS workout_date, 
+        COALESCE(SUM(json_extract(e.attributes, '$.elapsedDuration')), 0) AS daily_duration
+    FROM 
+        garmin_data e
+    WHERE 
+        e.type = 'activity' AND
+        e.user_id = '${id}' AND
+        e.date >= date('now', '-${monthsVal} months') AND
+        (e.attributes->'activityType'->>'typeKey' = 'cycling')
+    GROUP BY 
+        workout_date
+)
+SELECT 
+    ds.date AS day,
+    strftime('%Y-%m', ds.date) AS month,
+    strftime('%Y-W%W', ds.date) AS week,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-%m', ds.date) ORDER BY ds.date), 0) AS monthly_accumulated_duration,
+    COALESCE(SUM(w.daily_duration) OVER (PARTITION BY strftime('%Y-W%W', ds.date) ORDER BY ds.date), 0) AS weekly_accumulated_duration
+FROM 
+    DateSeries ds
+LEFT JOIN 
+    Workouts w ON ds.date = w.workout_date
+ORDER BY 
+    ds.date;
+`,
+    }).then((results) => {
+      console.log({ results })
+      setCyclingDailyMinAccumulation(results)
     })
   }, [db, id, random])
 
@@ -200,9 +336,12 @@ ORDER BY
     })
   )
 
+  console.log({ dailyMinAccmumulation })
   if (!dailyMinAccmumulation) {
     return null
   }
+
+  const progress = calculateTimeProgress()
 
   const weeklyAccumulation = dailyMinAccmumulation.map((i) => {
     return {
@@ -218,10 +357,6 @@ ORDER BY
       count: Math.round((i.monthly_accumulated_duration / 60 / 60) * 10) / 10,
     }
   })
-  console.log({ weeklyAccumulation, monthlyAccumulation })
-  const progress = calculateTimeProgress()
-  console.log(`Week progress: ${progress.weekProgress.toFixed(1)}%`)
-  console.log(`Month progress: ${progress.monthProgress.toFixed(1)}%`)
 
   return (
     <>
@@ -247,8 +382,29 @@ ORDER BY
           months
         </Heading>
         <Chart
-          data={[...weeklyAccumulation, ...monthlyAccumulation]}
+          dailyMinAccmumulation={dailyMinAccmumulation}
           seriesField={`category`}
+          title="Total movement"
+        />
+        <Chart
+          dailyMinAccmumulation={dailyWalkingMinAccmumulation}
+          seriesField={`category`}
+          title="Walking/Hiking movement"
+        />
+        <Chart
+          dailyMinAccmumulation={dailyRunningMinAccmumulation}
+          seriesField={`category`}
+          title="Running movement"
+        />
+        <Chart
+          dailyMinAccmumulation={dailyCyclingMinAccmumulation}
+          seriesField={`category`}
+          title="Cycling movement"
+        />
+        <Chart
+          dailyMinAccmumulation={dailyGymMinAccmumulation}
+          seriesField={`category`}
+          title="Resistance movement"
         />
         <Heading>Garmin Credentials</Heading>
         <form
