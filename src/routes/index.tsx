@@ -141,10 +141,11 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
         <div>
           6-week load: {chronicMins.toPrecision(3)}
           {` `}
-          mins / day
+          mins / day, {(chronicMins * 7).toPrecision(3)} mins / week
         </div>
         <div>
-          1-week load: {(acuteDailyLoad * 60).toPrecision(3)} mins / day
+          1-week load: {(acuteDailyLoad * 60).toPrecision(3)} mins / day,{` `}
+          {(acuteDailyLoad * 60 * 7).toPrecision(3)} mins / week
         </div>
         <div>
           Ratio:{` `}
