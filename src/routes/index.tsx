@@ -66,7 +66,7 @@ const isMobile =
   /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
   )
-const monthsVal = isMobile ? `3` : `12`
+const monthsVal = isMobile ? `4` : `12`
 
 function ctl(dailyTraining) {
   const ctlArray = [0]
