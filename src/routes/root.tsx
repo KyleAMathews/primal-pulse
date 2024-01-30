@@ -1,6 +1,6 @@
 import { Outlet, NavLink, Link } from "react-router-dom"
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
-import { Flex, Box, Text, Heading } from "@radix-ui/themes"
+import { Flex, Box, Heading } from "@radix-ui/themes"
 import { ConnectivityIcon } from "../components/connectivity-icon"
 
 export default function Root() {

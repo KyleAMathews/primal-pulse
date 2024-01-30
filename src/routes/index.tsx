@@ -98,7 +98,7 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
       count: Math.round((i.monthly_accumulated_duration / 60 / 60) * 10) / 10,
     }
   })
-  const chronicDailyLoad = ctl(dailyMinAccmumulation.slice(-42))
+  const chronicDailyLoad = ctl(dailyMinAccmumulation.slice(-300))
   const acuteDailyLoad =
     Math.round(
       (dailyMinAccmumulation
@@ -165,7 +165,7 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
         </div>
         <div>
           Minutes to 1.5 ratio:{` `}
-          {(minsAtTopRatio - currentMinutes).toPrecision(2)} mins
+          {(minsAtTopRatio - currentMinutes).toPrecision(3)} mins
         </div>
       </div>
       <div
