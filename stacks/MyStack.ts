@@ -10,7 +10,12 @@ export function API({ stack }: StackContext) {
       },
     },
     routes: {
-      "GET /": `packages/functions/src/lambda.handler`,
+      "GET /": {
+        function: {
+          handler: `packages/functions/src/lambda.handler`,
+          timeout: 600,
+        },
+      },
     },
   })
 
