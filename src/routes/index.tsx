@@ -12,7 +12,7 @@ const lambdaFunction = import.meta.env.PROD
   ? `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
   : `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
 
-function BusyButton({ setRandom }) {
+function BusyButton() {
   const [busy, setBusy] = useState(false)
   const {
     user: { id },
@@ -25,10 +25,6 @@ function BusyButton({ setRandom }) {
         setBusy(true)
         await fetch(lambdaFunction + `?userId=${id}`)
         setBusy(false)
-        // Trigger re-running query
-        setTimeout(() => {
-          setRandom(Math.random())
-        }, 1000)
       }}
     >
       Fetch Latest Garmin Activities
@@ -186,7 +182,7 @@ const queries = ({ db }: { db: Electric[`db`] }) => {
 }
 
 Index.queries = queries
-
+const constOneMonthAgo = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30)
 export default function Index() {
   const { db } = useElectric()!
   const {
@@ -200,9 +196,28 @@ export default function Index() {
   const [dailyCyclingMinAccmumulation, setCyclingDailyMinAccumulation] =
     useState([])
   const [dailyGymMinAccmumulation, setGymDailyMinAccumulation] = useState([])
-  const [random, setRandom] = useState(Math.random())
+  const [activityCount, setActivityCount] = useState(0)
+
+  const { results: count } = useLiveQuery(
+    db.garmin_data.liveMany({
+      select: {
+        id: true,
+      },
+      where: {
+        date: {
+          // 1 month ago roughly
+          gte: constOneMonthAgo,
+        },
+      },
+    })
+  )
+  if (typeof count !== `undefined` && activityCount !== count?.length) {
+    console.log(`setActivityCount`)
+    setActivityCount(count.length)
+  }
 
   useEffect(() => {
+    console.log(`inside useEffect`)
     db.raw({
       sql: `WITH RECURSIVE DateSeries (date) AS (
     SELECT date('now', '-${monthsVal} months') AS date
@@ -239,7 +254,7 @@ ORDER BY
     ds.date;
 `,
     }).then((results) => {
-      console.log({ results })
+      console.log(`results`)
       setWalkingDailyMinAccumulation(results)
     })
     db.raw({
@@ -278,7 +293,6 @@ ORDER BY
     ds.date;
 `,
     }).then((results) => {
-      console.log({ results })
       setGymDailyMinAccumulation(results)
     })
     db.raw({
@@ -317,7 +331,6 @@ ORDER BY
     ds.date;
 `,
     }).then((results) => {
-      console.log({ results })
       setRunningDailyMinAccumulation(results)
     })
     db.raw({
@@ -355,7 +368,6 @@ ORDER BY
     ds.date;
 `,
     }).then((results) => {
-      console.log({ results })
       setDailyMinAccumulation(results)
     })
     db.raw({
@@ -394,10 +406,9 @@ ORDER BY
     ds.date;
 `,
     }).then((results) => {
-      console.log({ results })
       setCyclingDailyMinAccumulation(results)
     })
-  }, [db, id, random])
+  }, [activityCount, db, id])
 
   const { results: user } = useLiveQuery(
     db.users.liveUnique({
@@ -446,6 +457,8 @@ ORDER BY
             <Strong>{monthlyAccumulation.slice(-1)[0].count} hours</Strong>
           </Text>
           <br />
+          <Text as="p">{activityCount} activities in last 30 days</Text>
+          <br />
           <Text as="p">Recovery day === 0-0.5x * 6-week Load</Text>
           <Text as="p">Maintenance day === 0.5-1x * 6-week Load</Text>
           <Text as="p">Loading day === 1.5x * 6-week Load</Text>
@@ -487,7 +500,6 @@ ORDER BY
           onSubmit={async (e) => {
             e.preventDefault()
             const formData = Object.fromEntries(new FormData(e.target))
-            console.log({ formData })
             await db.users.update({
               data: {
                 ...formData,
@@ -514,7 +526,7 @@ ORDER BY
             <button type="submit">save</button>
           </Flex>
           <Flex mt="3">
-            <BusyButton setRandom={setRandom} />
+            <BusyButton />
           </Flex>
         </form>
       </Flex>

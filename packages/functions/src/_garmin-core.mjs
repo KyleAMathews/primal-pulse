@@ -45,7 +45,7 @@ export async function main({ userId, numActivities, connectionString }) {
       let values
 
       if (checkResult.rows.length > 0) {
-        console.log(`updating record`)
+        console.log(`updating record`, new Date(activity.startTimeGMT + ` GMT`))
         // Record exists, so prepare an update query
         query = `
       UPDATE garmin_data
@@ -59,7 +59,7 @@ export async function main({ userId, numActivities, connectionString }) {
           activity.activityId,
         ]
       } else {
-        console.log(`creating record`)
+        console.log(`creating record`, new Date(activity.startTimeGMT + ` GMT`))
         // Record does not exist, so prepare an insert query
         query = `
       INSERT INTO garmin_data (id, date, user_id, type, attributes)
