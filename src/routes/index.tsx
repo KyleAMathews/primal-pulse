@@ -204,6 +204,7 @@ export default function Index() {
         id: true,
       },
       where: {
+        user_id: id,
         date: {
           // 1 month ago roughly
           gte: constOneMonthAgo,
