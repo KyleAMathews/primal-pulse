@@ -185,6 +185,7 @@ Index.queries = queries
 const constOneMonthAgo = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30)
 export default function Index() {
   const { db } = useElectric()!
+  window.db = db
   const {
     user: { id },
   } = useUser()
@@ -388,7 +389,7 @@ Workouts AS (
         e.type = 'activity' AND
         e.user_id = '${id}' AND
         e.date >= date('now', '-${monthsVal} months') AND
-        (e.attributes->'activityType'->>'typeKey' = 'cycling')
+        (e.attributes->'activityType'->>'typeKey' = 'cycling' OR e.attributes->'activityType'->>'typeKey' = 'indoor_cycling')
     GROUP BY 
         workout_date
 )
