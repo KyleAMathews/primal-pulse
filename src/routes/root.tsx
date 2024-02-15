@@ -1,9 +1,28 @@
+import { useState, useEffect } from "react"
 import { Outlet, NavLink, Link } from "react-router-dom"
 import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
 import { Flex, Box, Heading } from "@radix-ui/themes"
 import { ConnectivityIcon } from "../components/connectivity-icon"
+import { UpdateIcon } from "@radix-ui/react-icons"
+import { useUser } from "@clerk/clerk-react"
+
+const lambdaFunction = import.meta.env.PROD
+  ? `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
+  : `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
 
 export default function Root() {
+  const [fetching, setFetching] = useState(false)
+  const {
+    user: { id },
+  } = useUser()
+  useEffect(() => {
+    async function fetchActivities() {
+      setFetching(true)
+      await fetch(lambdaFunction + `?userId=${id}`)
+      setFetching(false)
+    }
+    fetchActivities()
+  }, [id])
   return (
     <Flex direction="column" style={{ margin: `0 auto`, minHeight: `100%` }}>
       <Flex asChild align="center" p="3" justify="between">
@@ -12,7 +31,12 @@ export default function Root() {
             <ConnectivityIcon />
             <Heading size="2" weight="bold" trim="normal">
               <NavLink to="/" style={{ textDecoration: `none` }}>
-                Primal Pulse
+                <Heading>
+                  Primal Pulse{` `}
+                  {fetching && (
+                    <UpdateIcon className="icon-spin" height="16" width="16" />
+                  )}
+                </Heading>
               </NavLink>
             </Heading>
           </Flex>

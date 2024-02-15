@@ -36,6 +36,7 @@ export async function main({ userId, numActivities, connectionString }) {
   //console.log(userProfile)
   const activities = await GCClient.getActivities(0, numActivities)
   try {
+    await client.query(`BEGIN`)
     for (const activity of activities) {
       // Check if a record with the specified activityId exists
       const checkQuery = `SELECT id FROM garmin_data WHERE attributes->>'activityId' = $1`
@@ -82,7 +83,9 @@ export async function main({ userId, numActivities, connectionString }) {
       }
       // console.log(`done`)
     }
+    await client.query(`COMMIT`)
   } catch (e) {
+    await client.query(`ROLLBACK`)
     console.log(e)
     throw e
   } finally {

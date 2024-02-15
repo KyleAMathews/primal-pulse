@@ -113,9 +113,9 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
   const minsAtTopRatio = 1.5 * chronicMins * 7
   const currentMinutes = ratio * chronicMins * 7
 
-  console.log({ minsAtTopRatio, currentMinutes })
+  // console.log({ minsAtTopRatio, currentMinutes })
 
-  console.log(title, { chronicDailyLoad })
+  // console.log(title, { chronicDailyLoad })
   const props = {
     data: [...weeklyAccumulation, ...monthlyAccumulation],
     xField: (d) => new Date(d.day),
@@ -214,7 +214,7 @@ export default function Index() {
     })
   )
   if (typeof count !== `undefined` && activityCount !== count?.length) {
-    console.log(`setActivityCount`)
+    // console.log(`setActivityCount`)
     setActivityCount(count.length)
   }
 
@@ -256,7 +256,6 @@ ORDER BY
     ds.date;
 `,
     }).then((results) => {
-      console.log(`results`)
       setWalkingDailyMinAccumulation(results)
     })
     db.raw({
@@ -410,7 +409,7 @@ ORDER BY
     }).then((results) => {
       setCyclingDailyMinAccumulation(results)
     })
-  }, [activityCount, db, id])
+  }, [activityCount])
 
   const { results: user } = useLiveQuery(
     db.users.liveUnique({
@@ -420,7 +419,6 @@ ORDER BY
     })
   )
 
-  console.log({ dailyMinAccmumulation })
   if (!dailyMinAccmumulation) {
     return null
   }
