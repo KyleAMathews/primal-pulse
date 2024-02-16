@@ -14,16 +14,14 @@ const lambdaFunction = import.meta.env.PROD
 
 function BusyButton() {
   const [busy, setBusy] = useState(false)
-  const {
-    user: { id },
-  } = useUser()
+  const { user } = useUser()
 
   return (
     <Button
       disabled={busy}
       onClick={async () => {
         setBusy(true)
-        await fetch(lambdaFunction + `?userId=${id}`)
+        await fetch(lambdaFunction + `?userId=${user?.id}`)
         setBusy(false)
       }}
     >
