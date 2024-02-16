@@ -12,17 +12,15 @@ const lambdaFunction = import.meta.env.PROD
 
 export default function Root() {
   const [fetching, setFetching] = useState(false)
-  const {
-    user: { id },
-  } = useUser()
+  const { user } = useUser()
   useEffect(() => {
     async function fetchActivities() {
       setFetching(true)
-      await fetch(lambdaFunction + `?userId=${id}`)
+      await fetch(lambdaFunction + `?userId=${user.id}`)
       setFetching(false)
     }
     fetchActivities()
-  }, [id])
+  }, [user])
   return (
     <Flex direction="column" style={{ margin: `0 auto`, minHeight: `100%` }}>
       <Flex asChild align="center" p="3" justify="between">
