@@ -22,23 +22,58 @@ export function ElectricalProvider({ children }) {
     // declare the data fetching function
     const setupElectric = async () => {
       const token = await getToken()
-      console.log({ token, user })
       if (token && user) {
         const config = {
           appName: `garmin`,
           schema,
           sqliteWasmPath: sqliteWasm,
           config: {
+            debug: false, //DEBUG_MODE,
+            url: electricUrl,
             auth: {
               token,
             },
-            debug: true, //DEBUG_MODE,
-            url: electricUrl,
           },
         }
         console.log({ config })
         const electric = await initElectric(config)
         setDb(electric)
+        console.log({ electric })
+
+        // Connect to Electric
+        await electric.connect(token)
+        // Renew the JWT every hour
+        const oneMinute = 60 * 1000
+        let stopRenewing = renewPeriodically(electric, oneMinute)
+
+        // Subscribe to connectivity changes to detect JWT expiration
+        electric.notifier.subscribeToConnectivityStateChanges(async (x) => {
+          if (
+            x.connectivityState.status === `disconnected` &&
+            x.connectivityState.error === `JWT expired`
+          ) {
+            console.log(`JWT expired, reconnecting...`)
+            stopRenewing() // NOTE: the connectivity state change event is async and is fired after the socket to Electric is closed. Between the socket closing and this event firing, we may have tried to renew the token which will fail
+            const newToken = getToken()
+            await electric.connect(newToken)
+            console.log(`connection restored`)
+            stopRenewing = renewPeriodically(electric, oneMinute)
+          }
+        })
+
+        // Renews the JWT periodically
+        // and returns a function that can be called to stop renewing
+        function renewPeriodically(electric: Electric, ms: number) {
+          const id = setInterval(async () => {
+            // Renew the JWT
+            const renewedToken = getToken()
+            await electric.renew(renewedToken)
+            console.log(`Renewed JWT`)
+          }, ms)
+          return () => {
+            clearInterval(id)
+          }
+        }
 
         // Sync user data in if it's changed.
         const { db } = electric
