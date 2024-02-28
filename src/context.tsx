@@ -35,10 +35,8 @@ export function ElectricalProvider({ children }) {
             },
           },
         }
-        console.log({ config })
         const electric = await initElectric(config)
         setDb(electric)
-        console.log({ electric })
 
         // Connect to Electric
         await electric.connect(token)
