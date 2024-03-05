@@ -9,7 +9,7 @@ import { useElectric } from "../context"
 import { useUser } from "@clerk/clerk-react"
 
 const lambdaFunction = import.meta.env.PROD
-  ? `https://7dr5i4gfxg.execute-api.us-east-1.amazonaws.com`
+  ? `https://cvrr3u369a.execute-api.us-east-1.amazonaws.com`
   : `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
 
 function BusyButton() {
