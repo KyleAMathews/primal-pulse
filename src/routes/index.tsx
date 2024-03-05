@@ -7,10 +7,7 @@ import { Electric } from "../generated/client"
 import { Line } from "@ant-design/charts"
 import { useElectric } from "../context"
 import { useUser } from "@clerk/clerk-react"
-
-const lambdaFunction = import.meta.env.PROD
-  ? `https://cvrr3u369a.execute-api.us-east-1.amazonaws.com`
-  : `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
+import { lambdaFunction } from "../util"
 
 function BusyButton() {
   const [busy, setBusy] = useState(false)

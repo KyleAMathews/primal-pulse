@@ -5,10 +5,7 @@ import { Flex, Box, Heading } from "@radix-ui/themes"
 import { ConnectivityIcon } from "../components/connectivity-icon"
 import { UpdateIcon } from "@radix-ui/react-icons"
 import { useUser } from "@clerk/clerk-react"
-
-const lambdaFunction = import.meta.env.PROD
-  ? `https://cvrr3u369a.execute-api.us-east-1.amazonaws.com`
-  : `https://owqae9qlal.execute-api.us-east-1.amazonaws.com`
+import { lambdaFunction } from "../util"
 
 export default function Root() {
   const [fetching, setFetching] = useState(false)
