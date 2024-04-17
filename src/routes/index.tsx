@@ -110,23 +110,11 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
 
   // console.log(title, { chronicDailyLoad })
   const data = [...weeklyAccumulation, ...monthlyAccumulation]
-  const props = {
-    data,
-    xField: (d) => new Date(d.day),
-    yField: `count`,
-    axis: {
-      y: {
-        title: `Hours of movement`,
-      },
-    },
-    seriesField,
-    height: isMobile ? 300 : 600,
-    colorField: seriesField,
-  }
 
   useEffect(() => {
     if (data === undefined) return
     const plot = Plot.plot({
+      // margin: 0,
       width: containerRef.current.clientWidth,
       y: { grid: true, label: `Hours of Movement` },
       color: { legend: true },
@@ -178,7 +166,7 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
           {(minsAtTopRatio - currentMinutes).toPrecision(3)} mins
         </div>
       </div>
-      <div ref={containerRef} />;
+      <div ref={containerRef} />
     </div>
   )
 }

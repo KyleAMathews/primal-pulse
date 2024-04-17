@@ -17,3 +17,6 @@ body {
   animation: spin 2s linear infinite; /* Adjust timing as needed */
 }
 
+figure {
+  margin: 0;
+}
