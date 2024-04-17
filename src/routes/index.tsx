@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 import { useElectricData } from "electric-query"
 import { Flex, Button, Heading, Text, Box, Em, Strong } from "@radix-ui/themes"
 import { useLiveQuery } from "electric-sql/react"
 import { Electric } from "../generated/client"
-import { Line } from "@ant-design/charts"
 import { useElectric } from "../context"
 import { useUser } from "@clerk/clerk-react"
 import { lambdaFunction } from "../util"
+import * as Plot from "@observablehq/plot"
 
 function BusyButton() {
   const [busy, setBusy] = useState(false)
@@ -72,9 +72,7 @@ function ctl(dailyTraining) {
 }
 
 function Chart({ dailyMinAccmumulation, seriesField, title }) {
-  if (dailyMinAccmumulation.length === 0) {
-    return
-  }
+  const containerRef = useRef()
   const weeklyAccumulation = dailyMinAccmumulation.map((i) => {
     return {
       day: i.day,
@@ -111,8 +109,9 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
   // console.log({ minsAtTopRatio, currentMinutes })
 
   // console.log(title, { chronicDailyLoad })
+  const data = [...weeklyAccumulation, ...monthlyAccumulation]
   const props = {
-    data: [...weeklyAccumulation, ...monthlyAccumulation],
+    data,
     xField: (d) => new Date(d.day),
     yField: `count`,
     axis: {
@@ -124,6 +123,26 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
     height: isMobile ? 300 : 600,
     colorField: seriesField,
   }
+
+  useEffect(() => {
+    if (data === undefined) return
+    const plot = Plot.plot({
+      width: containerRef.current.clientWidth,
+      y: { grid: true, label: `Hours of Movement` },
+      color: { legend: true },
+      marks: [
+        Plot.ruleY([0]),
+        Plot.line(data, {
+          x: (d) => new Date(d.day),
+          y: `count`,
+          stroke: seriesField,
+          tip: true,
+        }),
+      ],
+    })
+    containerRef.current.append(plot)
+    return () => plot.remove()
+  }, [data])
 
   return (
     <div>
@@ -159,15 +178,7 @@ function Chart({ dailyMinAccmumulation, seriesField, title }) {
           {(minsAtTopRatio - currentMinutes).toPrecision(3)} mins
         </div>
       </div>
-      <div
-        style={{
-          height: isMobile ? 300 : 600,
-          marginLeft: -12,
-          marginRight: -12,
-        }}
-      >
-        <Line {...props} />
-      </div>
+      <div ref={containerRef} />;
     </div>
   )
 }
